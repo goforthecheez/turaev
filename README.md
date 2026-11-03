@@ -1,6 +1,6 @@
 Python code to assist in generation of curves for the Appendix.
 
-This is based on Andrew Stavey's tutorial for his knots and hobby packages:
+This is based on Andrew Stacey's tutorial for his knots and hobby packages:
 https://loopspace.mathforge.org/HowDidIDoThat/TeX/Knots/
 
 The following Stack Exchange threads were useful for debugging:
