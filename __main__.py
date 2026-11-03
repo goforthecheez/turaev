@@ -4,7 +4,7 @@ import sys
 """Charts are lists of lists, ordered by ascending list length.
 Within each list, the first element must be the smallest positive element.
 """
-CHART = [[1, -1]]
+CHART = [[1, 2, 3, -3, -2, -1]]
 # Hard case with 1 orbit.
 # CHART = [[1, 5, -2, -1, 7, 3, 2, 6, -3, -4, -5, -6, -7, 4]]
 
@@ -39,7 +39,7 @@ class Chart:
       arc_dict[val] = idx
           
     output = "([closed]0, 0) .. +(0:1) .. "
-    for val in range(1, multiplicity):
+    for val in range(2, multiplicity + 1):
       # Incoming arc
       angle = (360.0/orbit_length) * arc_dict[-val]
       output += "+(" + str(angle) + ":1) .. "
