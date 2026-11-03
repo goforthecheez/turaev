@@ -4,7 +4,7 @@ import sys
 """Charts are lists of lists, ordered by ascending list length.
 Within each list, the first element must be the smallest positive element.
 """
-CHART = [[1, 2, 3, -3, -2, -1]]
+CHART = [[1, 2, -2, -1]]
 # Hard case with 1 orbit.
 # CHART = [[1, 5, -2, -1, 7, 3, 2, 6, -3, -4, -5, -6, -7, 4]]
 
@@ -55,8 +55,28 @@ class Chart:
     output += "+(" + str(angle) + ":1) .. (0, 0);"
     return output
 
-  def print_strand(self):
+  # Returns string that draws the curve.
+  def draw_strand(self):
     return "\\strand " + self._compute_curve()
+ 
+  # Returns string to draws orientation arrows on the curve.
+  # Uses the method from here:
+  #   https://tex.stackexchange.com/questions/534491/unexpected-behavior-of-arrow-decorations-on-knots-multiple-arrows-and-gaps-appe
+  def draw_arrows(self):
+    output = "\\draw[opacity=0, postaction={decorate}, decoration={"
+    output += "\n  markings,"
+    
+    total_multiplicity = 0
+    for cycle in self._chart:
+      total_multiplicity += int(len(cycle) / 2)
+    for i in range(total_multiplicity):
+      output += '\n' + "  mark=at position "
+      output += str((2 * i + 1)/(total_multiplicity * 2))
+      output += " with {\\arrow[line width=2pt, red, opacity=1]{>}},"
+      
+    output += "}]"
+    output += self._compute_curve()
+    return output
 
   # Returns string to draw crossing points.
   def draw_crossings(self):
@@ -70,8 +90,9 @@ class Chart:
   def draw_chart(self):
     output = TIKZ_PICTURE_BEGIN
     output += '\n' + KNOT_BEGIN
-    output += '\n' + self.print_strand()
+    output += '\n' + self.draw_strand()
     output += '\n' + KNOT_END
+    output += '\n' + self.draw_arrows()
     output += '\n' + self.draw_crossings()
     output += '\n' + TIKZ_PICTURE_END
     return output
