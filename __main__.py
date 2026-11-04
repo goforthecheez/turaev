@@ -4,7 +4,7 @@ import sys
 """Charts are lists of lists, ordered by ascending list length.
 Within each list, the first element must be the smallest positive element.
 """
-CHART = [[1, 2, -2, -1]]
+CHART = [[1, -1], [2, 3, -2, -3]]
 # Hard case with 1 orbit.
 # CHART = [[1, 5, -2, -1, 7, 3, 2, 6, -3, -4, -5, -6, -7, 4]]
 
@@ -26,33 +26,53 @@ class Chart:
     self._chart = chart
     self._num_orbits = len(chart)
 
-  # Computes the string specifying the curve.
-  # TODO: Add support for multiple orbits.
-  def _compute_curve(self):
-    cycle = self._chart[0]
-    orbit_length = len(cycle)
-    multiplicity = int(orbit_length / 2)
+  # Returns the index of the dict in arc_dicts containing val.
+  def _get_cycle_index(self, arc_dicts, val):
+    for (idx, arc_dict) in enumerate(arc_dicts):
+      if val in arc_dict.keys():
+        return idx
 
-    # Given a value, find its position in the cycle
-    arc_dict = {}
-    for idx, val in enumerate(cycle):
-      arc_dict[val] = idx
+  # Computes the string specifying the curve.
+  # Crossings are positioned 3 units apart on the x-axis.
+  def _compute_curve(self):
+    arc_dicts = []
+    total_multiplicity = 0
+    for cycle in self._chart:
+      multiplicity = int(len(cycle) / 2)
+      total_multiplicity += multiplicity
+
+      # Given a value, find its position in the cycle
+      arc_dict = {}
+      for idx, val in enumerate(cycle):
+        arc_dict[val] = idx
+      arc_dicts.append(arc_dict)
           
-    output = "([closed]0, 0) .. +(0:1) .. "
-    for val in range(2, multiplicity + 1):
+    output = "([closed]0, 0) .. (1, 0) .. "
+    for val in range(2, total_multiplicity + 1):
+      # Which cycle?
+      idx = self._get_cycle_index(arc_dicts, val)
+      arc_dict = arc_dicts[idx]
+      orbit_size = len(arc_dict)
+    
       # Incoming arc
-      angle = (360.0/orbit_length) * arc_dict[-val]
-      output += "+(" + str(angle) + ":1) .. "
-      
-      # New origin
-      output += "(0, 0) .. "
+      x = idx * 3
+      angle = (360.0/orbit_size) * arc_dict[-val]
+      output +=  "($(" + str(x) + ", 0) "
+      output += "+ (" + str(angle) + ":1)$) .. "
+      output += "(" + str(x) + ", 0) .. "
       
       # Outgoing arc
-      angle = (360.0/orbit_length) * arc_dict[val]
-      output += "+(" + str(angle) + ":1) .."
+      angle = (360.0/orbit_size) * arc_dict[val]
+      output += "+(" + str(angle) + ":1) .. "
     # Final incoming arc
-    angle = (360.0/orbit_length) * arc_dict[-1]
-    output += "+(" + str(angle) + ":1) .. (0, 0);"
+    idx = self._get_cycle_index(arc_dicts, -1)
+    arc_dict = arc_dicts[idx]
+    orbit_size = len(arc_dict)
+    x = idx * 3
+    angle = (360.0/orbit_size) * arc_dict[-1]
+    output +=  "($(" + str(x) + ", 0) "
+    output += "+ (" + str(angle) + ":1)$) .. "
+    output += "(" + str(x) + ", 0);"
     return output
 
   # Returns string that draws the curve.
@@ -79,11 +99,12 @@ class Chart:
     return output
 
   # Returns string to draw crossing points.
+  # They are spaced 3 units apart on the x-axis.
   def draw_crossings(self):
     output = ""
     for i in range(self._num_orbits):
       output += '\n' + ("\\draw[fill=red, draw=none] ("
-                        + str(i) + ",0) circle (0.15);")
+                        + str(i * 3) + ",0) circle (0.15);")
     return output
 
   # Returns string to draw tikzpicture of the curve.
